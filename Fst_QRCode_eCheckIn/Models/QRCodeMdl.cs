@@ -17,7 +17,7 @@ namespace Fst_QRCode_eCheckIn.Models
             TOTP = GenerateTOTP(); // Generate and set the TOTP
                                    ////var url = $"http://172.26.160.1%3A8077?timestamp={timestamp}&otp={TOTP}";
                                    //var url = "http://172.20.10.2:1048/Registration/Index";
-            var url = $"https://localhost:44331/Registration/Index";
+            var url = $"https://eregistrator.azurewebsites.net/Registration/Index";
             return url;
         }
 
