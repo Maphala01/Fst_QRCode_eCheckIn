@@ -1,4 +1,7 @@
-﻿using System.Configuration;
+﻿
+using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using Fst_QRCode_eCheckIn.Models;
 
@@ -29,6 +32,84 @@ namespace Fst_QRCode_eCheckIn.Data
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
+            }
+        }
+
+        public List<Department> GetDepartments()
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var command = new SqlCommand("SELECT DepartmentName FROM Departments ORDER BY DepartmentName ASC", connection);
+                var reader = command.ExecuteReader();
+
+                var departments = new List<Department>();
+
+                while (reader.Read())
+                {
+                    departments.Add(new Department { DepartmentName = reader["DepartmentName"].ToString() });
+                }
+
+                return departments;
+            }
+        }
+
+        public List<Employee> GetEmployees()
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var command = new SqlCommand("SELECT Name FROM Employees ORDER BY Name ASC", connection);
+                var reader = command.ExecuteReader();
+
+                var employees = new List<Employee>();
+
+                while (reader.Read())
+                {
+                    employees.Add(new Employee { EmployeeName = reader["Name"].ToString() });
+                }
+
+                return employees;
+            }
+        }
+
+        public List<Department> GetDepartmentsByTerm(string term)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var command = new SqlCommand("SELECT DepartmentName FROM Departments WHERE DepartmentName LIKE @term ORDER BY DepartmentName ASC", connection);
+                command.Parameters.AddWithValue("@term", "%" + term + "%");
+                var reader = command.ExecuteReader();
+
+                var departments = new List<Department>();
+
+                while (reader.Read())
+                {
+                    departments.Add(new Department { DepartmentName = reader["DepartmentName"].ToString() });
+                }
+
+                return departments;
+            }
+        }
+
+        public List<Employee> GetEmployeesByTerm(string term)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+                var command = new SqlCommand("SELECT Name FROM Employees WHERE Name LIKE @term ORDER BY Name ASC", connection);
+                command.Parameters.AddWithValue("@term", "%" + term + "%");
+                var reader = command.ExecuteReader();
+
+                var employees = new List<Employee>();
+
+                while (reader.Read())
+                {
+                    employees.Add(new Employee { EmployeeName = reader["Name"].ToString() });
+                }
+
+                return employees;
             }
         }
     }

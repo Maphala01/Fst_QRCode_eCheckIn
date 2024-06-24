@@ -1,5 +1,10 @@
-﻿@{
+﻿
+@model Fst_QRCode_eCheckIn.Models.RegistrationMdl
+
+@{
     Layout = null;
+    var departmentsList = ViewBag.Departments as List<Fst_QRCode_eCheckIn.Models.Department>;
+    var employeesList = ViewBag.Employees as List<Fst_QRCode_eCheckIn.Models.Employee>;
 }
 
 <!DOCTYPE html>
@@ -8,52 +13,110 @@
     <meta name="viewport" content="width=device-width" />
     <title></title>
     <link href="~/Content/StyleSheet.css" rel="stylesheet" />
-    @*Add Select2 CSS*@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0/css/select2.min.css" rel="stylesheet" />
 </head>
 <body>
     <div class="container">
         <div class="content">
-            <img src="https://res.cloudinary.com/debbsefe/image/upload/f_auto,c_fill,dpr_auto,e_grayscale/image_fz7n7w.webp" alt="header-image" class="cld-responsive">
+            <img class="cld-responsive" alt="header-image" src="https://res.cloudinary.com/debbsefe/image/upload/f_auto,c_fill,dpr_auto,e_grayscale/image_fz7n7w.webp">
             <h1 class="form-title">FASSET eCheck-In 2024</h1>
-            <form class="Form">
-                <h5 style="text-align:center">ENTER TOTP</h5>
+            @if (ViewBag.Message != null)
+            {
+                <div class="alert alert-success">@ViewBag.Message</div>
+            }
+            <form class="Form" action="@Url.Action("SubmitRegistration", "Registration")" method="post">
+                <h5 style="text-align:center">
+                    ENTER TOTP
+                </h5>
                 <div class="otp-container">
-                    <input type="text" maxlength="1" class="otp-input" required>
-                    <input type="text" maxlength="1" class="otp-input" required>
-                    <input type="text" maxlength="1" class="otp-input" required>
-                    <input type="text" maxlength="1" class="otp-input" required>
-                    <input type="text" maxlength="1" class="otp-input" required>
+                    @for (int i = 0; i < 5; i++)
+                    {
+                        <input required="" class="otp-input" maxlength="1" name="otp[]" type="text">
+                    }
                 </div>
-  
+
                 <div class="input-animated">
-                    <input type="text" id="department" list="departments" required placeholder="DEPARTMENT" />
-                    <label for="department" class="label-department"><span class="content-department">DEPARTMENT</span></label>
+                    <input placeholder="DEPARTMENT" required="" list="departments" name="Department" id="department" type="text">
+                    <label class="label-department" for="department"><span class="content-department">DEPARTMENT</span></label>
                     <datalist id="departments">
-                        <option value="Human Resources">
-                        <option value="Finance">
-                        <option value="Engineering">
-                        <option value="Marketing">
-                        <option value="Sales">
+                        <option value="">Select a Department</option>
+                        @if (departmentsList != null)
+                        {
+                            var departmentList = departmentsList.Take(5);
+                            foreach (var department in departmentList)
+                            {
+                                <option value="@department.DepartmentName">@department.DepartmentName</option>
+                            }
+                        }
                     </datalist>
                 </div>
+
                 <div class="input-animated">
-                    <input type="text" placeholder="NAME" required>
-                    <label class="label-name"><span class="content-name">NAME</span></label>
+                    <input placeholder="EMPLOYEE" required="" list="employees" name="Employee" id="employee" type="text">
+                    <label class="label-employee" for="employee"><span class="content-employee">EMPLOYEE</span></label>
+                    <datalist id="employees">
+                        <option value="">Select an Employee</option>
+                        @if (employeesList != null)
+                        {
+                            var employeeList = employeesList.Take(5);
+                            foreach (var employee in employeeList)
+                            {
+                                <option value="@employee.EmployeeName">@employee.EmployeeName</option>
+                            }
+                        }
+                    </datalist>
                 </div>
-                <button type="button">Submit</button>
+
+                @Html.HiddenFor(m => m.qrCodeImgUrl)
+                @Html.HiddenFor(m => m.QRCodeTotp)
+
+                <button type="submit">Submit</button>
             </form>
         </div>
     </div>
-    Add jQuery (required by Select2)
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    Add Select2 JS
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0/js/select2.min.js"></script>
-    Initialize Select2 for the department select
     <script>
-        $(document).ready(function () {
-            $('.department-select').select2();
+    $(document).ready(function () {
+        $('#department').on('input', function () {
+            var inputVal = $(this).val();
+            if (inputVal.length > 0) {
+                $.ajax({
+                    url: '@Url.Action("GetDepartments", "Registration")',
+                    type: 'GET',
+                    data: { term: inputVal },
+                    success: function (data) {
+                        var departmentList = $('#departments');
+                        departmentList.empty();
+                        departmentList.append('<option value="">Select a Department</option>');
+                        $.each(data, function (index, department) {
+                            departmentList.append('<option value="' + department.DepartmentName + '">' + department.DepartmentName + '</option>');
+                        });
+                    }
+                });
+            }
         });
+
+        $('#employee').on('input', function () {
+            var inputVal = $(this).val();
+            if (inputVal.length > 0) {
+                $.ajax({
+                    url: '@Url.Action("GetEmployees", "Registration")',
+                    type: 'GET',
+                    data: { term: inputVal },
+                    success: function (data) {
+                        var employeeList = $('#employees');
+                        employeeList.empty();
+                        employeeList.append('<option value="">Select an Employee</option>');
+                        $.each(data, function (index, employee) {
+                            employeeList.append('<option value="' + employee.EmployeeName + '">' + employee.EmployeeName + '</option>');
+                        });
+                    }
+                });
+            }
+        });
+    });
     </script>
 </body>
 </html>
