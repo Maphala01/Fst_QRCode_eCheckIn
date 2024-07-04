@@ -31,7 +31,7 @@
                 <div class="otp-container">
                     @for (int i = 0; i < 5; i++)
                     {
-                        <input required="" class="otp-input" maxlength="1" name="otp[]" type="text">
+                        <input required class="otp-input" maxlength="1" name="otp[]" type="text" oninput="moveToNext(this, event, @i == 4)">
                     }
                 </div>
 
@@ -70,7 +70,7 @@
                 @Html.HiddenFor(m => m.qrCodeImgUrl)
                 @Html.HiddenFor(m => m.QRCodeTotp)
 
-                <button type="submit">Submit</button>
+                <button type="submit" id="submit-button">Submit</button>
             </form>
         </div>
     </div>
@@ -79,6 +79,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0/js/select2.min.js"></script>
     <script>
     $(document).ready(function () {
+      // Handle department input change
         $('#department').on('input', function () {
             var inputVal = $(this).val();
             if (inputVal.length > 0) {
@@ -98,6 +99,25 @@
             }
         });
 
+        @*$('#employee').on('input', function () {
+            var inputVal = $(this).val();
+            if (inputVal.length > 0) {
+                $.ajax({
+                    url: '@Url.Action("GetEmployees", "Registration")',
+                    type: 'GET',
+                    data: { term: inputVal },
+                    success: function (data) {
+                        var employeeList = $('#employees');
+                        employeeList.empty();
+                        employeeList.append('<option value="">Select an Employee</option>');
+                        $.each(data, function (index, employee) {
+                            employeeList.append('<option value="' + employee.EmployeeName + '">' + employee.EmployeeName + '</option>');
+                        });
+                    }
+                });
+            }
+        });*@
+        // Handle employee input change
         $('#employee').on('input', function () {
             var inputVal = $(this).val();
             if (inputVal.length > 0) {
@@ -116,7 +136,34 @@
                 });
             }
         });
+
+        // Focus on employee field when department is selected
+        $('#department').on('change', function () {
+            $('#employee').focus();
+        });
+
+        // Focus on submit button when employee is selected
+        $('#employee').on('change', function () {
+            $('#submit-button').focus();
+        });
+
     });
+
+        function moveToNext(currentInput, event, isLast) {
+            if (currentInput.value.length >= 1) {
+                if (isLast) {
+                    document.getElementById('department').focus();
+                } else {
+                    let nextInput = currentInput.nextElementSibling;
+                    while (nextInput && nextInput.tagName !== 'INPUT') {
+                        nextInput = nextInput.nextElementSibling;
+                    }
+                    if (nextInput && nextInput.classList.contains('otp-input')) {
+                        nextInput.focus();
+                    }
+                }
+            }
+        }
     </script>
 </body>
 </html>
